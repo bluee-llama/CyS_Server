@@ -1,0 +1,104 @@
+openapi: 3.0.0
+info:
+  title: API Servidor Seguro Multimedia
+  version: 1.0.0
+  description: Servidor de almacenamiento con cifrado extremo a extremo.
+paths:
+  /registrar:
+    post:
+      summary: Registra un nuevo usuario con sus credenciales criptográficas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password_login:
+                  type: string
+                clave_publica_rsa:
+                  type: string
+                clave_privada_cifrada:
+                  type: string
+      responses:
+        '201':
+          description: Usuario registrado correctamente
+
+  /login:
+    post:
+      summary: Autentica al usuario y devuelve un token de sesión
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password_login:
+                  type: string
+      responses:
+        '200':
+          description: Autenticación exitosa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+
+  /subir:
+    post:
+      summary: Sube un archivo cifrado y la clave AES envuelta
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                archivo_cifrado:
+                  type: string
+                  format: binary
+                clave_aes_envuelta:
+                  type: string
+      responses:
+        '201':
+          description: Archivo subido y registrado con éxito
+
+  /bajar/{id_archivo}:
+    get:
+      summary: Descarga un archivo cifrado y la clave AES envuelta del usuario
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id_archivo
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Archivo y clave listos para descarga
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ruta_descarga:
+                    type: string
+                  clave_aes_envuelta:
+                    type: string
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

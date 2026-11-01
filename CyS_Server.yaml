@@ -95,6 +95,48 @@ paths:
                     type: string
                   clave_aes_envuelta:
                     type: string
+  /usuarios/{username}/clave_publica:
+      get:
+        summary: Obtiene la clave pública de un usuario para poder compartirle un archivo
+        security:
+          - bearerAuth: []
+        parameters:
+          - name: username
+            in: path
+            required: true
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Clave pública obtenida correctamente
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    clave_publica_rsa:
+                      type: string
+  /compartir:
+    post:
+      summary: Asigna un archivo existente a un nuevo usuario con su clave AES envuelta
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id_archivo:
+                  type: integer
+                username_destino:
+                  type: string
+                nueva_clave_aes_envuelta:
+                  type: string
+      responses:
+        '200':
+          description: Archivo compartido con éxito
 
 components:
   securitySchemes:

@@ -50,6 +50,28 @@ paths:
                 properties:
                   token:
                     type: string
+                  k_pub:
+                    type: string
+                  k_priv_cifrada:
+                    type: string
+                  datos_usuario:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                      fecha_registro:
+                        type: string
+                      archivos_subidos:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id_archivo:
+                              type: integer
+                            nombre_archivo:
+                              type: string
+                            fecha_subida:
+                              type: string
 
   /subir:
     post:

@@ -1,0 +1,234 @@
+openapi: 3.0.0
+info:
+  description: Servidor de almacenamiento con cifrado extremo a extremo.
+  title: API Servidor Seguro Multimedia
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  /registrar:
+    post:
+      operationId: registrarPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_registrar_post_request"
+        required: true
+      responses:
+        "201":
+          description: Usuario registrado correctamente
+      summary: Registra un nuevo usuario con sus credenciales criptográficas
+      x-eov-operation-handler: controllers/DefaultController
+  /login:
+    post:
+      operationId: loginPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_login_post_request"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_login_post_200_response"
+          description: Autenticación exitosa
+      summary: Autentica al usuario y devuelve un token de sesión
+      x-eov-operation-handler: controllers/DefaultController
+  /subir:
+    post:
+      operationId: subirPOST
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: "#/components/schemas/_subir_post_request"
+        required: true
+      responses:
+        "201":
+          description: Archivo subido y registrado con éxito
+      security:
+      - bearerAuth: []
+      summary: Sube un archivo cifrado y la clave AES envuelta
+      x-eov-operation-handler: controllers/DefaultController
+  /bajar/{id_archivo}:
+    get:
+      operationId: bajarIdArchivoGET
+      parameters:
+      - explode: false
+        in: path
+        name: id_archivo
+        required: true
+        schema:
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_bajar__id_archivo__get_200_response"
+          description: Archivo y clave listos para descarga
+      security:
+      - bearerAuth: []
+      summary: Descarga un archivo cifrado y la clave AES envuelta del usuario
+      x-eov-operation-handler: controllers/DefaultController
+  /usuarios/{username}/clave_publica:
+    get:
+      operationId: usuariosUsernameClavePublicaGET
+      parameters:
+      - explode: false
+        in: path
+        name: username
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/_usuarios__username__clave_publica_get_200_response"
+          description: Clave pública obtenida correctamente
+      security:
+      - bearerAuth: []
+      summary: Obtiene la clave pública de un usuario para poder compartirle un archivo
+      x-eov-operation-handler: controllers/DefaultController
+  /compartir:
+    post:
+      operationId: compartirPOST
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/_compartir_post_request"
+        required: true
+      responses:
+        "200":
+          description: Archivo compartido con éxito
+      security:
+      - bearerAuth: []
+      summary: Asigna un archivo existente a un nuevo usuario con su clave AES envuelta
+      x-eov-operation-handler: controllers/DefaultController
+components:
+  schemas:
+    _bajar__id_archivo__get_200_response:
+      example:
+        ruta_descarga: ruta_descarga
+        clave_aes_envuelta: clave_aes_envuelta
+      properties:
+        ruta_descarga:
+          type: string
+        clave_aes_envuelta:
+          type: string
+      type: object
+    _login_post_200_response_datos_usuario:
+      example:
+        username: username
+        fecha_registro: fecha_registro
+        archivos_subidos:
+        - id_archivo: 0
+          nombre_archivo: nombre_archivo
+          fecha_subida: fecha_subida
+        - id_archivo: 0
+          nombre_archivo: nombre_archivo
+          fecha_subida: fecha_subida
+      properties:
+        username:
+          type: string
+        fecha_registro:
+          type: string
+        archivos_subidos:
+          items:
+            $ref: "#/components/schemas/_login_post_200_response_datos_usuario_archivos_subidos_inner"
+          type: array
+      type: object
+    _login_post_200_response_datos_usuario_archivos_subidos_inner:
+      example:
+        id_archivo: 0
+        nombre_archivo: nombre_archivo
+        fecha_subida: fecha_subida
+      properties:
+        id_archivo:
+          type: integer
+        nombre_archivo:
+          type: string
+        fecha_subida:
+          type: string
+      type: object
+    _registrar_post_request:
+      properties:
+        username:
+          type: string
+        password_login:
+          type: string
+        clave_publica_rsa:
+          type: string
+        clave_privada_cifrada:
+          type: string
+      type: object
+    _subir_post_request:
+      properties:
+        archivo_cifrado:
+          format: binary
+          type: string
+        clave_aes_envuelta:
+          type: string
+      type: object
+    _compartir_post_request:
+      properties:
+        id_archivo:
+          type: integer
+        username_destino:
+          type: string
+        nueva_clave_aes_envuelta:
+          type: string
+      type: object
+    _login_post_request:
+      properties:
+        username:
+          type: string
+        password_login:
+          type: string
+      type: object
+    _usuarios__username__clave_publica_get_200_response:
+      example:
+        clave_publica_rsa: clave_publica_rsa
+      properties:
+        clave_publica_rsa:
+          type: string
+      type: object
+    _login_post_200_response:
+      example:
+        token: token
+        k_pub: k_pub
+        k_priv_cifrada: k_priv_cifrada
+        datos_usuario:
+          username: username
+          fecha_registro: fecha_registro
+          archivos_subidos:
+          - id_archivo: 0
+            nombre_archivo: nombre_archivo
+            fecha_subida: fecha_subida
+          - id_archivo: 0
+            nombre_archivo: nombre_archivo
+            fecha_subida: fecha_subida
+      properties:
+        token:
+          type: string
+        k_pub:
+          type: string
+        k_priv_cifrada:
+          type: string
+        datos_usuario:
+          $ref: "#/components/schemas/_login_post_200_response_datos_usuario"
+      type: object
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
